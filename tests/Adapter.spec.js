@@ -23,6 +23,7 @@ describe('Adapter', () => {
         moxios.stubRequest('http://example.com/test', {
             status: 200,
             responseText: `
+                <title>Page Title | As part of the spatie/laravel-pjax middleware's response</title>
                 <div id="loadedComponent">
                     <loaded-component></loaded-component>
                 </div>
@@ -97,6 +98,20 @@ describe('Adapter', () => {
                 let headers = moxios.requests.at(0).headers;
                 expect(headers['X-PJAX']).toBe(true);
                 expect(headers['X-PJAX-Container']).toBe('#pjax-container');
+                done();
+            })
+        });
+
+        it('sets the correct title on the document and removes it from the body', (done) => {
+            expect(document.head.getElementsByTagName('title')[0].text).toBe('Original Title');
+            const testTitle = "Page Title | As part of the spatie/laravel-pjax middleware's response";
+            let vm = createVm();
+
+            vm.find('a.pjax').trigger('click');
+
+            moxios.wait(() => {
+                expect(document.head.getElementsByTagName('title')[0].text).toBe(testTitle);
+                expect(vm.html()).not.toContain(`<title>${testTitle}</title>`);
                 done();
             })
         });

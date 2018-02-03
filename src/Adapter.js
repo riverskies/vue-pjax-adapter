@@ -37,7 +37,8 @@ class Plugin {
         return axios.get(link.href)
             .then(
                 response => {
-                    document.querySelector(this.config.targetSelector).innerHTML = response.data;
+                    document.querySelector('head > title').innerHTML = this.extractTitle(response.data);
+                    document.querySelector(this.config.targetSelector).innerHTML = this.withoutTitle(response.data);
                     window.history.pushState({}, '', link);
                     new this.Vue({
                         el: this.config.targetSelector,
@@ -49,10 +50,22 @@ class Plugin {
             );
     }
 
+    extractTitle(html) {
+        return this.titlePattern.exec(html)[1];
+    }
+
+    withoutTitle(html) {
+        return html.replace(this.titlePattern.exec(html)[0], '');
+    }
+
     get defaultConfig() {
         return {
             targetSelector: '#pjax-container',
         };
+    }
+
+    get titlePattern() {
+        return new RegExp(/\s*<title>(.*)<\/title>\s*/);
     }
 }
 
