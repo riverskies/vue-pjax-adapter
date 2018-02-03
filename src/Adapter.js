@@ -46,7 +46,7 @@ class Plugin {
 
     get defaultConfig() {
         return {
-            targetSelector: '#page',
+            targetSelector: '#pjax-container',
         };
     }
 }

@@ -53,9 +53,9 @@ describe('Adapter', () => {
                 expect(spy.calledOnce).toBe(true);
                 expect(spy.firstCall.args[0].defaultPrevented).toBe(true);
                 expect(moxios.requests.count()).toBe(1);
-                expect(vm.find('#page #loadedComponent').text()).toBe('RENDERED CONTENT');
-                expect(vm.find('#page loaded-component').element).toBeFalsy();
-                expect(vm.find('#page #loadedComponent').element).toBeTruthy();
+                expect(vm.find('#pjax-container #loadedComponent').text()).toBe('RENDERED CONTENT');
+                expect(vm.find('#pjax-container loaded-component').element).toBeFalsy();
+                expect(vm.find('#pjax-container #loadedComponent').element).toBeTruthy();
                 done();
             });
         });
@@ -67,9 +67,9 @@ describe('Adapter', () => {
 
             moxios.wait(() => {
                 expect(moxios.requests.count()).toBe(1);
-                expect(vm.find('#page #loadedComponent').text()).toBe('RENDERED CONTENT');
-                expect(vm.find('#page loaded-component').element).toBeFalsy();
-                expect(vm.find('#page #loadedComponent').element).toBeTruthy();
+                expect(vm.find('#pjax-container #loadedComponent').text()).toBe('RENDERED CONTENT');
+                expect(vm.find('#pjax-container loaded-component').element).toBeFalsy();
+                expect(vm.find('#pjax-container #loadedComponent').element).toBeTruthy();
                 done();
             });
         });
@@ -104,15 +104,15 @@ describe('Adapter', () => {
     });
 
     describe('@options', () => {
-        it('the content target selector defaults to #page', (done) => {
+        it('the content target selector defaults to #pjax-container', (done) => {
             let vm = createVm();
-            expect(vm.find('#page').text()).toBe('DEFAULT TARGET');
+            expect(vm.find('#pjax-container').text()).toBe('DEFAULT TARGET');
 
             vm.find('a.pjax').trigger('click');
 
             moxios.wait(() => {
                 expect(moxios.requests.count()).toBe(1);
-                expect(vm.find('#page #loadedComponent').text()).toBe('RENDERED CONTENT');
+                expect(vm.find('#pjax-container #loadedComponent').text()).toBe('RENDERED CONTENT');
                 done();
             });
         });
