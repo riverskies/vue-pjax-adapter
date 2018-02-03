@@ -39,7 +39,7 @@ class Plugin {
                 response => {
                     document.querySelector('head > title').innerHTML = this.extractTitle(response.data);
                     document.querySelector(this.config.targetSelector).innerHTML = this.withoutTitle(response.data);
-                    window.history.pushState({}, '', link);
+                    window.history.pushState({}, '', response.headers['x-pjax-url']);
                     new this.Vue({
                         el: this.config.targetSelector,
                     });

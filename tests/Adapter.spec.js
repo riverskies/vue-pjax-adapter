@@ -22,6 +22,9 @@ describe('Adapter', () => {
         moxios.install();
         moxios.stubRequest('http://example.com/test', {
             status: 200,
+            headers: {
+                'X-PJAX-URL': '/test',
+            },
             responseText: `
                 <title>Page Title | As part of the spatie/laravel-pjax middleware's response</title>
                 <div id="loadedComponent">
