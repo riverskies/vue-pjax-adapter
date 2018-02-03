@@ -1,0 +1,1 @@
+require('laravel-mix');
