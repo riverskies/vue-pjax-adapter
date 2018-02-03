@@ -132,6 +132,21 @@ describe('Adapter', () => {
             });
         });
 
+        it('reloads the full page on browser back/forward button navigation', (done) => {
+            let vm = createVm();
+            sinon.stub(window, 'location').set(() => {
+                done();
+            });
+
+            vm.find('a.pjax').trigger('click');
+
+            moxios.wait(() => {
+                expect(window.location.href).toBe('http://example.com/test');
+
+                window.history.back();
+            });
+        });
+
         it('has a data property to disable using pjax on certain links', (done) => {
             let vm = createVm();
             let spy = sinon.spy();

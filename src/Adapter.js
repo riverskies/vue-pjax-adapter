@@ -18,10 +18,25 @@ class Plugin {
     }
 
     init() {
+        this.setHeaders();
+        this.configureBackButton();
+        this.configureClickHandler();
+        this.hasInitialised = true;
+    }
+
+    setHeaders() {
         axios.defaults.headers.common['X-PJAX'] = true;
         axios.defaults.headers.common['X-PJAX-Container'] = this.config.targetSelector;
+    }
+
+    configureBackButton() {
+        window.onpopstate = () => {
+            window.location = window.location.href;
+        };
+    }
+
+    configureClickHandler() {
         document.addEventListener('click', this.clickListener.bind(this));
-        this.hasInitialised = true;
     }
 
     clickListener(e) {
