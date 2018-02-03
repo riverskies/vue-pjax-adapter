@@ -147,12 +147,27 @@ describe('Adapter', () => {
             });
         });
 
-        it('has a data property to disable using pjax on certain links', (done) => {
+        it('has a class to disable using pjax on certain links', (done) => {
             let vm = createVm();
             let spy = sinon.spy();
 
             vm.find('a.no-pjax').element.addEventListener('click', spy);
             vm.find('a.no-pjax').trigger('click');
+
+            moxios.wait(() => {
+                expect(spy.called).toBe(true);
+                expect(spy.firstCall.args[0].defaultPrevented).toBe(false);
+                expect(moxios.requests.count()).toBe(0);
+                done();
+            })
+        });
+
+        it('has a data property to disable using pjax on certain links', (done) => {
+            let vm = createVm();
+            let spy = sinon.spy();
+
+            vm.find('a.no-pjax-with-dataprop').element.addEventListener('click', spy);
+            vm.find('a.no-pjax-with-dataprop').trigger('click');
 
             moxios.wait(() => {
                 expect(spy.called).toBe(true);
