@@ -1,0 +1,47 @@
+{
+    "name": "vue-pjax-adapter",
+    "version": "0.1.0",
+    "description": "A Vue plugin to enhance your website performance with PJAX without relying on jQuery.",
+    "scripts": {
+        "dev": "npm run development",
+        "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
+        "watch": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --watch --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
+        "watch-poll": "npm run watch -- --watch-poll",
+        "hot": "cross-env NODE_ENV=development node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline --hot --config=node_modules/laravel-mix/setup/webpack.config.js",
+        "prod": "npm run production",
+        "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --no-progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
+        "tests": "mocha-webpack --webpack-config=node_modules/laravel-mix/setup/webpack.config.js --require tests/setup.js --slow 200 --recursive \"tests/**/*.spec.js\""
+    },
+    "keywords": [
+        "vue",
+        "pjax"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/riverskies/vue-pjax-adapter"
+    },
+    "bugs": {
+        "url": "https://github.com/riverskies/vue-pjax-adapter/issues"
+    },
+    "author": {
+        "name": "Barnabas Kecskes",
+        "email": "barnabas@riverskies.com"
+    },
+    "license": "MIT",
+    "dependencies": {
+        "axios": "^0.17.1",
+        "vue": "^2.5.13"
+    },
+    "devDependencies": {
+        "@vue/test-utils": "^1.0.0-beta.11",
+        "cross-env": "^5.1.3",
+        "expect": "^22.1.0",
+        "jsdom": "^11.6.2",
+        "jsdom-global": "^3.0.2",
+        "laravel-mix": "^2.0.0",
+        "mocha": "^4.1.0",
+        "mocha-webpack": "^1.0.1",
+        "moxios": "^0.4.0",
+        "sinon": "^4.2.2"
+    }
+}
