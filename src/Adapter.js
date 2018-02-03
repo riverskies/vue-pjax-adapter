@@ -26,7 +26,7 @@ class Plugin {
 
     clickListener(e) {
         if (e.target.nodeName == 'A') {
-            if (e.target.classList.contains('no-pjax')) return true;
+            if (e.target.dataset.noPjax !== undefined) return true;
 
             e.preventDefault();
             this.clickHandler(e.target);

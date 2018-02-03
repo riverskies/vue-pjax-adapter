@@ -132,7 +132,7 @@ describe('Adapter', () => {
             });
         });
 
-        it('has a directive to disable using pjax on certain links', (done) => {
+        it('has a data property to disable using pjax on certain links', (done) => {
             let vm = createVm();
             let spy = sinon.spy();
 
