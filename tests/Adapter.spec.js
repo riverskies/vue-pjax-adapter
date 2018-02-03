@@ -101,6 +101,19 @@ describe('Adapter', () => {
             })
         });
 
+        it('initialises itself only once', (done) => {
+            sinon.spy(document, 'addEventListener');
+            let vm = createVm();
+
+            vm.find('a.pjax').trigger('click');
+
+            moxios.wait(() => {
+                expect(document.addEventListener.calledOnce).toBe(true);
+                document.addEventListener.restore();
+                done();
+            });
+        });
+
         it('has a directive to disable using pjax on certain links', (done) => {
             let vm = createVm();
             let spy = sinon.spy();

@@ -5,7 +5,9 @@ class Plugin {
         Vue.$pjaxAdapter = new Plugin(Vue, options);
         Vue.mixin({
             mounted() {
-                Vue.$pjaxAdapter.init();
+                if (!Vue.$pjaxAdapter.hasInitialised) {
+                    Vue.$pjaxAdapter.init();
+                }
             },
         });
     }
@@ -19,6 +21,7 @@ class Plugin {
         axios.defaults.headers.common['X-PJAX'] = true;
         axios.defaults.headers.common['X-PJAX-Container'] = this.config.targetSelector;
         document.addEventListener('click', this.clickListener.bind(this));
+        this.hasInitialised = true;
     }
 
     clickListener(e) {
