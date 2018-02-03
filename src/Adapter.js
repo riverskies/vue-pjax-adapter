@@ -16,6 +16,8 @@ class Plugin {
     }
 
     init() {
+        axios.defaults.headers.common['X-PJAX'] = true;
+        axios.defaults.headers.common['X-PJAX-Container'] = this.config.targetSelector;
         document.addEventListener('click', this.clickListener.bind(this));
     }
 

@@ -87,6 +87,20 @@ describe('Adapter', () => {
             });
         });
 
+        it('sets the correct headers', (done) => {
+            let vm = createVm();
+
+            vm.find('a.pjax').trigger('click');
+
+            moxios.wait(() => {
+                expect(moxios.requests.count()).toBe(1);
+                let headers = moxios.requests.at(0).headers;
+                expect(headers['X-PJAX']).toBe(true);
+                expect(headers['X-PJAX-Container']).toBe('#pjax-container');
+                done();
+            })
+        });
+
         it('has a directive to disable using pjax on certain links', (done) => {
             let vm = createVm();
             let spy = sinon.spy();
@@ -112,6 +126,7 @@ describe('Adapter', () => {
 
             moxios.wait(() => {
                 expect(moxios.requests.count()).toBe(1);
+                expect(moxios.requests.at(0).headers['X-PJAX-Container']).toBe('#pjax-container');
                 expect(vm.find('#pjax-container #loadedComponent').text()).toBe('RENDERED CONTENT');
                 done();
             });
@@ -125,6 +140,7 @@ describe('Adapter', () => {
 
             moxios.wait(() => {
                 expect(moxios.requests.count()).toBe(1);
+                expect(moxios.requests.at(0).headers['X-PJAX-Container']).toBe('#testTarget');
                 expect(vm.find('#testTarget #loadedComponent').text()).toBe('RENDERED CONTENT');
                 done();
             });
