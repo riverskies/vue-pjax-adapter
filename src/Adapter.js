@@ -40,13 +40,39 @@ class Plugin {
     }
 
     clickListener(e) {
-        if (e.target.nodeName == 'A') {
-            if (e.target.dataset.noPjax !== undefined) return true;
-            if (e.target.classList.contains('no-pjax')) return true;
+        let element = e.target;
+
+        if (element.nodeName == 'A') {
+            if (this.isDisabledByDataAttribute(element)) return true;
+            if (this.isDisabledByClassAttribute(element)) return true;
 
             e.preventDefault();
-            this.clickHandler(e.target);
+            this.clickHandler(element);
         }
+    }
+
+    isDisabledByDataAttribute(element) {
+        let testedNode = element;
+
+        while (testedNode !== document) {
+            if (testedNode.dataset.noPjax !== undefined) return true;
+
+            testedNode = testedNode.parentNode;
+        }
+
+        return false;
+    }
+
+    isDisabledByClassAttribute(element) {
+        let testedNode = element;
+
+        while (testedNode !== document) {
+            if (testedNode.classList.contains('no-pjax')) return true;
+
+            testedNode = testedNode.parentNode;
+        }
+
+        return false;
     }
 
     clickHandler(link) {

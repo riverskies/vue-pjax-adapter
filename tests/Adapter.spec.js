@@ -102,7 +102,7 @@ describe('Adapter', () => {
                 expect(headers['X-PJAX']).toBe(true);
                 expect(headers['X-PJAX-Container']).toBe('#pjax-container');
                 done();
-            })
+            });
         });
 
         it('sets the correct title on the document and removes it from the body', (done) => {
@@ -116,7 +116,7 @@ describe('Adapter', () => {
                 expect(document.head.getElementsByTagName('title')[0].text).toBe(testTitle);
                 expect(vm.html()).not.toContain(`<title>${testTitle}</title>`);
                 done();
-            })
+            });
         });
 
         it('initialises itself only once', (done) => {
@@ -159,7 +159,7 @@ describe('Adapter', () => {
                 expect(spy.firstCall.args[0].defaultPrevented).toBe(false);
                 expect(moxios.requests.count()).toBe(0);
                 done();
-            })
+            });
         });
 
         it('has a data property to disable using pjax on certain links', (done) => {
@@ -174,7 +174,81 @@ describe('Adapter', () => {
                 expect(spy.firstCall.args[0].defaultPrevented).toBe(false);
                 expect(moxios.requests.count()).toBe(0);
                 done();
-            })
+            });
+        });
+
+        it('can disable PJAX at depth by disabling it on the common parent with a class attribute', (done) => {
+            let vm = createVm();
+            let spy1 = sinon.spy();
+            let spy2 = sinon.spy();
+            let spy3 = sinon.spy();
+
+            vm.find('a.no-pjax-at-depth-1').element.addEventListener('click', spy1);
+            vm.find('a.no-pjax-at-depth-2').element.addEventListener('click', spy2);
+            vm.find('a.no-pjax-at-depth-3').element.addEventListener('click', spy3);
+
+            vm.find('a.no-pjax-at-depth-1').trigger('click');
+
+            moxios.wait(() => {
+                expect(spy1.called).toBe(true);
+                expect(spy1.firstCall.args[0].defaultPrevented).toBe(false);
+                expect(moxios.requests.count()).toBe(0);
+
+                vm.find('a.no-pjax-at-depth-2').trigger('click');
+
+                moxios.wait(() => {
+                    expect(spy2.called).toBe(true);
+                    expect(spy2.firstCall.args[0].defaultPrevented).toBe(false);
+                    expect(moxios.requests.count()).toBe(0);
+
+                    vm.find('a.no-pjax-at-depth-3').trigger('click');
+
+                    moxios.wait(() => {
+                        expect(spy3.called).toBe(true);
+                        expect(spy3.firstCall.args[0].defaultPrevented).toBe(false);
+                        expect(moxios.requests.count()).toBe(0);
+
+                        done();
+                    });
+                });
+            });
+        });
+
+        it('can disable PJAX at depth by disabling it on the common parent with a data attribute', (done) => {
+            let vm = createVm();
+            let spy4 = sinon.spy();
+            let spy5 = sinon.spy();
+            let spy6 = sinon.spy();
+
+            vm.find('a.no-pjax-at-depth-4').element.addEventListener('click', spy4);
+            vm.find('a.no-pjax-at-depth-5').element.addEventListener('click', spy5);
+            vm.find('a.no-pjax-at-depth-6').element.addEventListener('click', spy6);
+
+            vm.find('a.no-pjax-at-depth-4').trigger('click');
+
+            moxios.wait(() => {
+                expect(spy4.called).toBe(true);
+                expect(spy4.firstCall.args[0].defaultPrevented).toBe(false);
+                expect(moxios.requests.count()).toBe(0);
+
+                // vm.find('a.no-pjax-at-depth-5').trigger('click');
+                //
+                // moxios.wait(() => {
+                //     expect(spy5.called).toBe(true);
+                //     expect(spy5.firstCall.args[0].defaultPrevented).toBe(false);
+                //     expect(moxios.requests.count()).toBe(0);
+                //
+                //     vm.find('a.no-pjax-at-depth-6').trigger('click');
+                //
+                //     moxios.wait(() => {
+                //         expect(spy6.called).toBe(true);
+                //         expect(spy6.firstCall.args[0].defaultPrevented).toBe(false);
+                //         expect(moxios.requests.count()).toBe(0);
+                //
+                done();
+                //     });
+                // });
+            });
         });
     });
 
