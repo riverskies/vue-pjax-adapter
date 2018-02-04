@@ -5,7 +5,9 @@ class Plugin {
         Vue.$pjaxAdapter = new Plugin(Vue, options);
         Vue.mixin({
             mounted() {
-                Vue.$pjaxAdapter.init();
+                if (!Vue.$pjaxAdapter.hasInitialised) {
+                    Vue.$pjaxAdapter.init();
+                }
             },
         });
     }
@@ -16,24 +18,70 @@ class Plugin {
     }
 
     init() {
+        this.setHeaders();
+        this.configureBackButton();
+        this.configureClickHandler();
+        this.hasInitialised = true;
+    }
+
+    setHeaders() {
+        axios.defaults.headers.common['X-PJAX'] = true;
+        axios.defaults.headers.common['X-PJAX-Container'] = this.config.targetSelector;
+    }
+
+    configureBackButton() {
+        window.onpopstate = () => {
+            window.location = window.location.href;
+        };
+    }
+
+    configureClickHandler() {
         document.addEventListener('click', this.clickListener.bind(this));
     }
 
     clickListener(e) {
-        if (e.target.nodeName == 'A') {
-            if (e.target.classList.contains('no-pjax')) return true;
+        let element = e.target;
+
+        if (element.nodeName == 'A') {
+            if (this.isDisabledByDataAttribute(element)) return true;
+            if (this.isDisabledByClassAttribute(element)) return true;
 
             e.preventDefault();
-            this.clickHandler(e.target);
+            this.clickHandler(element);
         }
+    }
+
+    isDisabledByDataAttribute(element) {
+        let testedNode = element;
+
+        while (testedNode !== document) {
+            if (testedNode.dataset.noPjax !== undefined) return true;
+
+            testedNode = testedNode.parentNode;
+        }
+
+        return false;
+    }
+
+    isDisabledByClassAttribute(element) {
+        let testedNode = element;
+
+        while (testedNode !== document) {
+            if (testedNode.classList.contains('no-pjax')) return true;
+
+            testedNode = testedNode.parentNode;
+        }
+
+        return false;
     }
 
     clickHandler(link) {
         return axios.get(link.href)
             .then(
                 response => {
-                    document.querySelector(this.config.targetSelector).innerHTML = response.data;
-                    window.history.pushState({}, '', link);
+                    document.querySelector('head > title').innerHTML = this.extractTitle(response.data);
+                    document.querySelector(this.config.targetSelector).innerHTML = this.withoutTitle(response.data);
+                    window.history.pushState({}, '', response.headers['x-pjax-url']);
                     new this.Vue({
                         el: this.config.targetSelector,
                     });
@@ -44,10 +92,22 @@ class Plugin {
             );
     }
 
+    extractTitle(html) {
+        return this.titlePattern.exec(html)[1];
+    }
+
+    withoutTitle(html) {
+        return html.replace(this.titlePattern.exec(html)[0], '');
+    }
+
     get defaultConfig() {
         return {
-            targetSelector: '#page',
+            targetSelector: '#pjax-container',
         };
+    }
+
+    get titlePattern() {
+        return new RegExp(/\s*<title>(.*)<\/title>\s*/);
     }
 }
 

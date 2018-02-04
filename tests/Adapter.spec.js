@@ -22,7 +22,11 @@ describe('Adapter', () => {
         moxios.install();
         moxios.stubRequest('http://example.com/test', {
             status: 200,
+            headers: {
+                'X-PJAX-URL': '/test',
+            },
             responseText: `
+                <title>Page Title | As part of the spatie/laravel-pjax middleware's response</title>
                 <div id="loadedComponent">
                     <loaded-component></loaded-component>
                 </div>
@@ -53,9 +57,9 @@ describe('Adapter', () => {
                 expect(spy.calledOnce).toBe(true);
                 expect(spy.firstCall.args[0].defaultPrevented).toBe(true);
                 expect(moxios.requests.count()).toBe(1);
-                expect(vm.find('#page #loadedComponent').text()).toBe('RENDERED CONTENT');
-                expect(vm.find('#page loaded-component').element).toBeFalsy();
-                expect(vm.find('#page #loadedComponent').element).toBeTruthy();
+                expect(vm.find('#pjax-container #loadedComponent').text()).toBe('RENDERED CONTENT');
+                expect(vm.find('#pjax-container loaded-component').element).toBeFalsy();
+                expect(vm.find('#pjax-container #loadedComponent').element).toBeTruthy();
                 done();
             });
         });
@@ -67,9 +71,9 @@ describe('Adapter', () => {
 
             moxios.wait(() => {
                 expect(moxios.requests.count()).toBe(1);
-                expect(vm.find('#page #loadedComponent').text()).toBe('RENDERED CONTENT');
-                expect(vm.find('#page loaded-component').element).toBeFalsy();
-                expect(vm.find('#page #loadedComponent').element).toBeTruthy();
+                expect(vm.find('#pjax-container #loadedComponent').text()).toBe('RENDERED CONTENT');
+                expect(vm.find('#pjax-container loaded-component').element).toBeFalsy();
+                expect(vm.find('#pjax-container #loadedComponent').element).toBeTruthy();
                 done();
             });
         });
@@ -87,7 +91,63 @@ describe('Adapter', () => {
             });
         });
 
-        it('has a directive to disable using pjax on certain links', (done) => {
+        it('sets the correct headers', (done) => {
+            let vm = createVm();
+
+            vm.find('a.pjax').trigger('click');
+
+            moxios.wait(() => {
+                expect(moxios.requests.count()).toBe(1);
+                let headers = moxios.requests.at(0).headers;
+                expect(headers['X-PJAX']).toBe(true);
+                expect(headers['X-PJAX-Container']).toBe('#pjax-container');
+                done();
+            });
+        });
+
+        it('sets the correct title on the document and removes it from the body', (done) => {
+            expect(document.head.getElementsByTagName('title')[0].text).toBe('Original Title');
+            const testTitle = "Page Title | As part of the spatie/laravel-pjax middleware's response";
+            let vm = createVm();
+
+            vm.find('a.pjax').trigger('click');
+
+            moxios.wait(() => {
+                expect(document.head.getElementsByTagName('title')[0].text).toBe(testTitle);
+                expect(vm.html()).not.toContain(`<title>${testTitle}</title>`);
+                done();
+            });
+        });
+
+        it('initialises itself only once', (done) => {
+            sinon.spy(document, 'addEventListener');
+            let vm = createVm();
+
+            vm.find('a.pjax').trigger('click');
+
+            moxios.wait(() => {
+                expect(document.addEventListener.calledOnce).toBe(true);
+                document.addEventListener.restore();
+                done();
+            });
+        });
+
+        it('reloads the full page on browser back/forward button navigation', (done) => {
+            let vm = createVm();
+            sinon.stub(window, 'location').set(() => {
+                done();
+            });
+
+            vm.find('a.pjax').trigger('click');
+
+            moxios.wait(() => {
+                expect(window.location.href).toBe('http://example.com/test');
+
+                window.history.back();
+            });
+        });
+
+        it('has a class to disable using pjax on certain links', (done) => {
             let vm = createVm();
             let spy = sinon.spy();
 
@@ -99,20 +159,110 @@ describe('Adapter', () => {
                 expect(spy.firstCall.args[0].defaultPrevented).toBe(false);
                 expect(moxios.requests.count()).toBe(0);
                 done();
-            })
+            });
+        });
+
+        it('has a data property to disable using pjax on certain links', (done) => {
+            let vm = createVm();
+            let spy = sinon.spy();
+
+            vm.find('a.no-pjax-with-dataprop').element.addEventListener('click', spy);
+            vm.find('a.no-pjax-with-dataprop').trigger('click');
+
+            moxios.wait(() => {
+                expect(spy.called).toBe(true);
+                expect(spy.firstCall.args[0].defaultPrevented).toBe(false);
+                expect(moxios.requests.count()).toBe(0);
+                done();
+            });
+        });
+
+        it('can disable PJAX at depth by disabling it on the common parent with a class attribute', (done) => {
+            let vm = createVm();
+            let spy1 = sinon.spy();
+            let spy2 = sinon.spy();
+            let spy3 = sinon.spy();
+
+            vm.find('a.no-pjax-at-depth-1').element.addEventListener('click', spy1);
+            vm.find('a.no-pjax-at-depth-2').element.addEventListener('click', spy2);
+            vm.find('a.no-pjax-at-depth-3').element.addEventListener('click', spy3);
+
+            vm.find('a.no-pjax-at-depth-1').trigger('click');
+
+            moxios.wait(() => {
+                expect(spy1.called).toBe(true);
+                expect(spy1.firstCall.args[0].defaultPrevented).toBe(false);
+                expect(moxios.requests.count()).toBe(0);
+
+                vm.find('a.no-pjax-at-depth-2').trigger('click');
+
+                moxios.wait(() => {
+                    expect(spy2.called).toBe(true);
+                    expect(spy2.firstCall.args[0].defaultPrevented).toBe(false);
+                    expect(moxios.requests.count()).toBe(0);
+
+                    vm.find('a.no-pjax-at-depth-3').trigger('click');
+
+                    moxios.wait(() => {
+                        expect(spy3.called).toBe(true);
+                        expect(spy3.firstCall.args[0].defaultPrevented).toBe(false);
+                        expect(moxios.requests.count()).toBe(0);
+
+                        done();
+                    });
+                });
+            });
+        });
+
+        it('can disable PJAX at depth by disabling it on the common parent with a data attribute', (done) => {
+            let vm = createVm();
+            let spy4 = sinon.spy();
+            let spy5 = sinon.spy();
+            let spy6 = sinon.spy();
+
+            vm.find('a.no-pjax-at-depth-4').element.addEventListener('click', spy4);
+            vm.find('a.no-pjax-at-depth-5').element.addEventListener('click', spy5);
+            vm.find('a.no-pjax-at-depth-6').element.addEventListener('click', spy6);
+
+            vm.find('a.no-pjax-at-depth-4').trigger('click');
+
+            moxios.wait(() => {
+                expect(spy4.called).toBe(true);
+                expect(spy4.firstCall.args[0].defaultPrevented).toBe(false);
+                expect(moxios.requests.count()).toBe(0);
+
+                // vm.find('a.no-pjax-at-depth-5').trigger('click');
+                //
+                // moxios.wait(() => {
+                //     expect(spy5.called).toBe(true);
+                //     expect(spy5.firstCall.args[0].defaultPrevented).toBe(false);
+                //     expect(moxios.requests.count()).toBe(0);
+                //
+                //     vm.find('a.no-pjax-at-depth-6').trigger('click');
+                //
+                //     moxios.wait(() => {
+                //         expect(spy6.called).toBe(true);
+                //         expect(spy6.firstCall.args[0].defaultPrevented).toBe(false);
+                //         expect(moxios.requests.count()).toBe(0);
+                //
+                done();
+                //     });
+                // });
+            });
         });
     });
 
     describe('@options', () => {
-        it('the content target selector defaults to #page', (done) => {
+        it('the content target selector defaults to #pjax-container', (done) => {
             let vm = createVm();
-            expect(vm.find('#page').text()).toBe('DEFAULT TARGET');
+            expect(vm.find('#pjax-container').text()).toBe('DEFAULT TARGET');
 
             vm.find('a.pjax').trigger('click');
 
             moxios.wait(() => {
                 expect(moxios.requests.count()).toBe(1);
-                expect(vm.find('#page #loadedComponent').text()).toBe('RENDERED CONTENT');
+                expect(moxios.requests.at(0).headers['X-PJAX-Container']).toBe('#pjax-container');
+                expect(vm.find('#pjax-container #loadedComponent').text()).toBe('RENDERED CONTENT');
                 done();
             });
         });
@@ -125,6 +275,7 @@ describe('Adapter', () => {
 
             moxios.wait(() => {
                 expect(moxios.requests.count()).toBe(1);
+                expect(moxios.requests.at(0).headers['X-PJAX-Container']).toBe('#testTarget');
                 expect(vm.find('#testTarget #loadedComponent').text()).toBe('RENDERED CONTENT');
                 done();
             });

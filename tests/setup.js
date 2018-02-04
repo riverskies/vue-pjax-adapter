@@ -1,7 +1,19 @@
+const baseUrl = 'http://example.com/';
+const baseHTML = `
+    <html>
+        <head>
+            <title>Original Title</title>
+        </head>
+        <body>
+        
+        </body>
+    </html>
+`;
+
 const dom = require('jsdom-global');
 global.resetDom = () => {
-    dom(undefined, {
-        url: 'http://example.com',
+    dom(baseHTML, {
+        url: baseUrl,
     });
 };
 
