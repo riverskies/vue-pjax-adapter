@@ -4,6 +4,11 @@ class Plugin {
     static install(Vue, options) {
         Vue.$pjaxAdapter = new Plugin(Vue, options);
         Vue.mixin({
+            created() {
+                if (window.app && window.app.__vue__ && window.app.__vue__.$store) {
+                    this.$store = window.app.__vue__.$store;
+                }
+            },
             mounted() {
                 if (!Vue.$pjaxAdapter.hasInitialised) {
                     Vue.$pjaxAdapter.init();

@@ -1,6 +1,6 @@
 {
     "name": "vue-pjax-adapter",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "A Vue plugin to enhance your website performance with PJAX without relying on jQuery.",
     "main": "index.js",
     "scripts": {
@@ -43,6 +43,7 @@
         "mocha": "^4.1.0",
         "mocha-webpack": "^1.0.1",
         "moxios": "^0.4.0",
-        "sinon": "^4.2.2"
+        "sinon": "^4.2.2",
+        "vuex": "^3.0.1"
     }
 }
