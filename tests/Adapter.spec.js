@@ -2,8 +2,9 @@ import moxios from 'moxios';
 import {createLocalVue, mount} from '@vue/test-utils';
 import WrapperComponent from '../src/WrapperComponent.vue';
 import Adapter from '../src/Adapter';
+import Vuex from 'vuex';
 
-const createVm = (options = {}) => {
+const createVm = (options = {}, store = {}) => {
     let localVue = createLocalVue();
 
     localVue.component('loaded-component', require('../src/LoadedComponent.vue'));
@@ -12,6 +13,7 @@ const createVm = (options = {}) => {
     return mount(WrapperComponent, {
         attachToDocument: true,
         localVue,
+        store,
     });
 };
 
@@ -74,6 +76,35 @@ describe('Adapter', () => {
                 expect(vm.find('#pjax-container #loadedComponent').text()).toBe('RENDERED CONTENT');
                 expect(vm.find('#pjax-container loaded-component').element).toBeFalsy();
                 expect(vm.find('#pjax-container #loadedComponent').element).toBeTruthy();
+                done();
+            });
+        });
+
+        it('initialises the vuex store if exists', (done) => {
+            let localVue = createLocalVue();
+            localVue.use(Adapter);
+            localVue.use(Vuex);
+
+            localVue.component('loaded-component', require('../src/StoreComponent.vue'));
+
+            let store = new Vuex.Store({
+                state: {testData: 123},
+            });
+
+            let wrapper = mount(WrapperComponent, {
+                attachToDocument: true,
+                localVue,
+                store,
+            });
+
+            window.app = wrapper.element;
+
+            expect(wrapper.vm.$store.state.testData).toBe(123);
+
+            wrapper.find('a.pjax').trigger('click');
+
+            moxios.wait(() => {
+                expect(wrapper.find('#pjax-container #loadedComponent').text()).toBe('123');
                 done();
             });
         });
