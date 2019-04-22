@@ -32,7 +32,7 @@ Now go to your `app.js` file where you set up Vue and initialise the plugin.
 require('./bootstrap');
 window.Vue = require('vue');
 
-import pjaxAdapter from 'vue-pjax-adapter';
+import { PjaxEventBus, pjaxAdapter} from 'vue-pjax-adapter';
 window.Vue.use(pjaxAdapter);
 
 // or if you don't like the default target, you can override it
@@ -84,7 +84,13 @@ If you have many of those under a common parent, you can do so by disabling the 
     </div>
 </div> 
 ```
-
+## Events
+you can also listen for events
+```
+PjaxEventBus.$on('pjax:send', function() {
+    console.log('this is a pjax event');
+});
+```
 ## How it works
 The plugin attaches an event listener to all the `a[href]` tags on your page at time of initialisation. When you click the link and you haven't disabled the PJAX behaviour, it takes over by preventing the default action and works with Spatie's PHP library to bring only the relevant content from the backend. Otherwise, it will let the default click event fall through and go on its merry way. 
 
