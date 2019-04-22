@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { PjaxEventBus } from './PjaxEventBus';
 
 class Plugin {
     static install(Vue, options) {
@@ -81,6 +82,7 @@ class Plugin {
     }
 
     clickHandler(link) {
+        PjaxEventBus.$emit('pjax:send');
         return axios.get(link.href)
             .then(
                 response => {
@@ -90,9 +92,12 @@ class Plugin {
                     new this.Vue({
                         el: this.config.targetSelector,
                     });
+                    PjaxEventBus.$emit('pjax:success');
+                    PjaxEventBus.$emit('pjax:complete');
                 },
                 error => {
-                    //
+                    PjaxEventBus.$emit('pjax:error');
+                    PjaxEventBus.$emit('pjax:complete');
                 }
             );
     }
