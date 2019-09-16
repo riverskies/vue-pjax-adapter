@@ -28,6 +28,7 @@ class Plugin {
         this.configureBackButton();
         this.configureClickHandler();
         this.hasInitialised = true;
+        PjaxEventBus.$emit('pjax:load');
     }
 
     setHeaders() {
